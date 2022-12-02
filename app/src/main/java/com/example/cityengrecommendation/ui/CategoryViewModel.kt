@@ -7,8 +7,9 @@ import com.example.cityengrecommendation.model.Category
 import com.example.cityengrecommendation.model.Recommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
-class CourseViewModel : ViewModel() {
+class CategoryViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         UiState(
@@ -17,13 +18,39 @@ class CourseViewModel : ViewModel() {
             currentCategory = CategoryDataProvider.getCategoryData().getOrElse(0) {
                 CategoryDataProvider.defaultCategory
             },
-            currentRecommendation = RecommendationsDataProvider.getRecommendationData().getOrElse(0) {
-                RecommendationsDataProvider.defaultRecommendation
-            }
+            currentRecommendation = RecommendationsDataProvider.getRecommendationData()
+                .getOrElse(0) {
+                    RecommendationsDataProvider.defaultRecommendation
+                }
 
         )
     )
     val uiState: StateFlow<UiState> = _uiState
+
+    fun updateCurrentCategory(selectedCategory: Category) {
+        _uiState.update {
+            it.copy(currentCategory = selectedCategory)
+        }
+    }
+
+    fun updateCurrentRecommendation(selectedRecommendation: Category) {
+        _uiState.update {
+            it.copy(currentRecommendation = selectedRecommendation)
+        }
+    }
+
+    fun navigateToListPage() {
+        _uiState.update {
+            it.copy(isShowingListPage = true)
+        }
+    }
+
+
+    fun navigateToDetailPage() {
+        _uiState.update {
+            it.copy(isShowingListPage = false)
+        }
+    }
 }
 
 data class UiState(
@@ -31,5 +58,5 @@ data class UiState(
     val recommendationList: List<Recommendation> = emptyList(),
     val currentCategory: Category = CategoryDataProvider.defaultCategory,
     val currentRecommendation: Recommendation = RecommendationsDataProvider.defaultRecommendation,
-    val isShowingListPage: Boolean = true
+    val isShowingListPage: Boolean = true,
 )

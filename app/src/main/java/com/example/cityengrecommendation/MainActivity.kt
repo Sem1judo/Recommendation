@@ -6,11 +6,17 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.R
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -19,13 +25,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cityengrecommendation.data.CategoryDataProvider
 import com.example.cityengrecommendation.data.RecommendationsDataProvider
 import com.example.cityengrecommendation.model.Category
 import com.example.cityengrecommendation.model.Recommendation
+import com.example.cityengrecommendation.ui.CategoryViewModel
 import com.example.cityengrecommendation.ui.theme.CityEngRecommendationTheme
+import com.example.cityengrecommendation.utils.CityContentType
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -35,11 +45,101 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-
+                    val windowSize = calculateWindowSizeClass(this)
+                    CityApp(windowSize = windowSize.widthSizeClass)
                 }
             }
         }
     }
+}
+
+@Composable
+fun CityApp(
+    windowSize: WindowWidthSizeClass,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: CategoryViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    val contentType = when (windowSize) {
+        WindowWidthSizeClass.Compact,
+        WindowWidthSizeClass.Medium,
+        -> CityContentType.ListOnly
+        WindowWidthSizeClass.Expanded -> CityContentType.ListAndDetail
+        else -> CityContentType.ListOnly
+
+    }
+    Scaffold(
+        topBar = {
+            CityAppBar(
+                isShowingListPage = uiState.isShowingListPage,
+                windowSize = windowSize,
+                onBackButtonClick = { viewModel.navigateToListPage() }
+            )
+        }
+    ) { innerPadding ->
+        if (contentType == CityContentType.ListAndDetail) {
+            CityContentType.ListAndDetail(
+                sports = uiState.categoryList,
+                sport = uiState.currentCategory,
+                {
+                    viewModel.updateCurrentCategory(it)
+                },
+                modifier = modifier.padding((innerPadding))
+            )
+        } else if (uiState.isShowingListPage) {
+            CategoriesList(
+                categoriesList = uiState.categoryList,
+                onClick = {
+                    viewModel.updateCurrentRecommendation(it)
+                    viewModel.navigateToDetailPage()
+                },
+                modifier = modifier.padding((innerPadding))
+            )
+        } else {
+            RecommendationDetail(
+                selectedRecommendation = uiState.,
+                modifier = modifier.padding((innerPadding)),
+                onBackPressed = {
+                    viewModel.navigateToListPage()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CityAppBar(
+    onBackButtonClick: () -> Unit,
+    isShowingListPage: Boolean,
+    windowSize: WindowWidthSizeClass,
+    modifier: Modifier = Modifier,
+) {
+
+    val isShowingDetailPage = windowSize != WindowWidthSizeClass.Expanded && !isShowingListPage
+    TopAppBar(
+        title = {
+            Text(
+                if (isShowingDetailPage) {
+                    stringResource(R.string.category_fragment_label)
+                } else {
+                    stringResource(R.string.list_fragment_label)
+                }
+            )
+        },
+        navigationIcon = if (isShowingDetailPage) {
+            {
+                IconButton(onClick = onBackButtonClick) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back_button)
+                    )
+                }
+            }
+        } else {
+            null
+        },
+        modifier = modifier
+    )
 }
 
 @Composable

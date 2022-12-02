@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">CityEngRecommendation</string>
-    <string name="list_fragment_label">Sports</string>
-    <string name="news_fragment_label">Sports News</string>
+    <string name="list_fragment_label">My city</string>
+    <string name="category_fragment_label">Category  %1$d</string>
 
     <string name="news_title">News</string>
     <string name="sports_news_detail_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
