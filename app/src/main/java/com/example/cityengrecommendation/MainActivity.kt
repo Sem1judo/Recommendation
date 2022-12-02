@@ -71,7 +71,10 @@ fun CityApp(
         topBar = {
             CityAppBar(
                 isShowingListPage = uiState.isShowingListPage,
+                isShowingListPageRecommendation = uiState.isShowingListPageRecommendation,
                 windowSize = windowSize,
+                category = uiState.currentCategory,
+                recommendation = uiState.currentRecommendation,
                 onBackButtonClick = { viewModel.navigateToListPage() }
             )
         }
@@ -105,7 +108,7 @@ fun CityApp(
                 },
                 modifier = modifier.padding((innerPadding))
             )
-        } else  {
+        } else {
             RecommendationDetail(
                 selectedCategory = uiState.currentCategory,
                 selectedRecommendation = uiState.currentRecommendation,
@@ -124,6 +127,9 @@ fun CityApp(
 fun CityAppBar(
     onBackButtonClick: () -> Unit,
     isShowingListPage: Boolean,
+    isShowingListPageRecommendation: Boolean,
+    category: Category,
+    recommendation: Recommendation,
     windowSize: WindowWidthSizeClass,
     modifier: Modifier = Modifier,
 ) {
@@ -133,9 +139,11 @@ fun CityAppBar(
         title = {
             Text(
                 if (isShowingDetailPage) {
-                    stringResource(R.string.category_fragment_label)
-                } else {
+                    stringResource(R.string.category_fragment_label, category)
+                } else if (isShowingListPageRecommendation) {
                     stringResource(R.string.list_fragment_label)
+                } else {
+                    stringResource(R.string.recommended_detail, recommendation)
                 }
             )
         },
