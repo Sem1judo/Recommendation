@@ -1,6 +1,7 @@
 package com.example.cityengrecommendation.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.livedata.core.R
 import com.example.cityengrecommendation.data.CategoryDataProvider
 import com.example.cityengrecommendation.data.RecommendationsDataProvider
 import com.example.cityengrecommendation.model.Category
@@ -33,7 +34,7 @@ class CategoryViewModel : ViewModel() {
         }
     }
 
-    fun updateCurrentRecommendation(selectedRecommendation: Category) {
+    fun updateCurrentRecommendation(selectedRecommendation: Recommendation) {
         _uiState.update {
             it.copy(currentRecommendation = selectedRecommendation)
         }
@@ -44,11 +45,17 @@ class CategoryViewModel : ViewModel() {
             it.copy(isShowingListPage = true)
         }
     }
+    fun navigateToListRecommended() {
+        _uiState.update {
+            it.copy(isShowingListPage = false,isShowingListPageRecommendation = true)
+
+        }
+    }
 
 
     fun navigateToDetailPage() {
         _uiState.update {
-            it.copy(isShowingListPage = false)
+            it.copy(isShowingListPageRecommendation = false,isShowingListPage = false)
         }
     }
 }
@@ -59,4 +66,5 @@ data class UiState(
     val currentCategory: Category = CategoryDataProvider.defaultCategory,
     val currentRecommendation: Recommendation = RecommendationsDataProvider.defaultRecommendation,
     val isShowingListPage: Boolean = true,
+    val isShowingListPageRecommendation: Boolean = false,
 )
