@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -77,31 +76,45 @@ fun CityApp(
             )
         }
     ) { innerPadding ->
-        if (contentType == CityContentType.ListAndDetail) {
-            CityContentType.ListAndDetail(
-                sports = uiState.categoryList,
-                sport = uiState.currentCategory,
-                {
-                    viewModel.updateCurrentCategory(it)
+//        if (contentType == CityContentType.ListAndDetail) {
+//            CityContentType.ListAndDetail(
+//                sports = uiState.categoryList,
+//                sport = uiState.currentCategory,
+//                {
+//                    viewModel.updateCurrentCategory(it)
+//                },
+//                modifier = modifier.padding((innerPadding))
+//            )
+        if (uiState.isShowingListPageRecommendation) {
+            RecommendationsList(
+                selectedCategory = uiState.currentCategory,
+                recommendationsList = uiState.recommendationList,
+                onClick = {
+                    viewModel.navigateToDetailPage()
+                    viewModel.updateCurrentRecommendation(it)
                 },
+                {},
                 modifier = modifier.padding((innerPadding))
             )
         } else if (uiState.isShowingListPage) {
             CategoriesList(
                 categoriesList = uiState.categoryList,
                 onClick = {
-                    viewModel.updateCurrentRecommendation(it)
-                    viewModel.navigateToDetailPage()
+                    viewModel.updateCurrentCategory(it)
+                    viewModel.navigateToListRecommended()
                 },
                 modifier = modifier.padding((innerPadding))
             )
-        } else {
+        } else  {
             RecommendationDetail(
-                selectedRecommendation = uiState.,
-                modifier = modifier.padding((innerPadding)),
-                onBackPressed = {
-                    viewModel.navigateToListPage()
-                }
+                selectedCategory = uiState.currentCategory,
+                selectedRecommendation = uiState.currentRecommendation,
+                onClick = {
+                    viewModel.updateCurrentRecommendation(it)
+                    viewModel.navigateToDetailPage()
+                },
+                {},
+                modifier = modifier.padding((innerPadding))
             )
         }
     }
@@ -144,7 +157,9 @@ fun CityAppBar(
 
 @Composable
 private fun RecommendationDetail(
+    selectedCategory: Category,
     selectedRecommendation: Recommendation,
+    onClick: (Recommendation) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -330,7 +345,19 @@ private fun ListImageItem(data: Any, modifier: Modifier = Modifier) {
 
 @Composable
 @Preview(showBackground = true)
-fun ListItemPreview() {
+fun RecommendationDetailPreview() {
+    CityEngRecommendationTheme {
+        RecommendationDetail(
+            selectedCategory = CategoryDataProvider.defaultCategory,
+            selectedRecommendation = RecommendationsDataProvider.defaultRecommendation,
+            onClick = {},
+            {})
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun CategoriesListPreview() {
     CityEngRecommendationTheme {
         CategoriesList(
             categoriesList = CategoryDataProvider.getCategoryData(),
@@ -341,7 +368,7 @@ fun ListItemPreview() {
 
 @Composable
 @Preview(showBackground = true)
-fun RecommendationsItemPreview() {
+fun RecommendationsListPreview() {
     CityEngRecommendationTheme {
         RecommendationsList(
             recommendationsList = RecommendationsDataProvider.getRecommendationData(),
