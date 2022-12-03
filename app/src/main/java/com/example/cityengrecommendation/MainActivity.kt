@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -75,7 +76,8 @@ fun CityApp(
                 windowSize = windowSize,
                 category = uiState.currentCategory,
                 recommendation = uiState.currentRecommendation,
-                onBackButtonClick = { viewModel.navigateToListPage() }
+                onBackButtonClickRecommendation = { viewModel.navigateToListPage() },
+                onBackButtonClickDetailPage = { viewModel.navigateToListRecommended() }
             )
         }
     ) { innerPadding ->
@@ -90,7 +92,6 @@ fun CityApp(
 //            )
         if (uiState.isShowingListPageRecommendation) {
             RecommendationsList(
-                selectedCategory = uiState.currentCategory,
                 recommendationsList = uiState.recommendationList,
                 onClick = {
                     viewModel.navigateToDetailPage()
@@ -110,12 +111,7 @@ fun CityApp(
             )
         } else {
             RecommendationDetail(
-                selectedCategory = uiState.currentCategory,
                 selectedRecommendation = uiState.currentRecommendation,
-                onClick = {
-                    viewModel.updateCurrentRecommendation(it)
-                    viewModel.navigateToDetailPage()
-                },
                 {},
                 modifier = modifier.padding((innerPadding))
             )
@@ -125,7 +121,8 @@ fun CityApp(
 
 @Composable
 fun CityAppBar(
-    onBackButtonClick: () -> Unit,
+    onBackButtonClickRecommendation: () -> Unit,
+    onBackButtonClickDetailPage: () -> Unit,
     isShowingListPage: Boolean,
     isShowingListPageRecommendation: Boolean,
     category: Category,
@@ -134,22 +131,38 @@ fun CityAppBar(
     modifier: Modifier = Modifier,
 ) {
 
-    val isShowingDetailPage = windowSize != WindowWidthSizeClass.Expanded && !isShowingListPage
+    val isShowingDetailPage = windowSize != WindowWidthSizeClass.Expanded && !isShowingListPage && !isShowingListPageRecommendation
     TopAppBar(
         title = {
             Text(
-                if (isShowingDetailPage) {
-                    stringResource(R.string.category_fragment_label, category)
-                } else if (isShowingListPageRecommendation) {
-                    stringResource(R.string.list_fragment_label)
+                if (isShowingListPageRecommendation) {
+                    stringResource(
+                        R.string.category_fragment_label,
+                        stringResource(category.titleResourceId)
+                    )
+                } else if (isShowingDetailPage) {
+                    stringResource(
+                        R.string.recommended_detail,
+                        stringResource(recommendation.titleResourceId)
+                    )
                 } else {
-                    stringResource(R.string.recommended_detail, recommendation)
+                    stringResource(R.string.list_fragment_label)
                 }
             )
         },
-        navigationIcon = if (isShowingDetailPage) {
+        navigationIcon =
+        if (isShowingDetailPage) {
             {
-                IconButton(onClick = onBackButtonClick) {
+                IconButton(onClick = onBackButtonClickDetailPage) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back_button)
+                    )
+                }
+            }
+        } else if (isShowingListPageRecommendation) {
+            {
+                IconButton(onClick = onBackButtonClickRecommendation) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back_button)
@@ -165,9 +178,7 @@ fun CityAppBar(
 
 @Composable
 private fun RecommendationDetail(
-    selectedCategory: Category,
     selectedRecommendation: Recommendation,
-    onClick: (Recommendation) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -209,12 +220,14 @@ private fun RecommendationDetail(
 
 @Composable
 fun RecommendationsList(
-    selectedCategory: Category,
     recommendationsList: List<Recommendation>,
     onClick: (Recommendation) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    BackHandler {
+        onBackPressed()
+    }
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -356,9 +369,7 @@ private fun ListImageItem(data: Any, modifier: Modifier = Modifier) {
 fun RecommendationDetailPreview() {
     CityEngRecommendationTheme {
         RecommendationDetail(
-            selectedCategory = CategoryDataProvider.defaultCategory,
             selectedRecommendation = RecommendationsDataProvider.defaultRecommendation,
-            onClick = {},
             {})
     }
 }
@@ -381,8 +392,7 @@ fun RecommendationsListPreview() {
         RecommendationsList(
             recommendationsList = RecommendationsDataProvider.getRecommendationData(),
             onClick = {},
-            onBackPressed = {},
-            selectedCategory = CategoryDataProvider.defaultCategory
+            onBackPressed = {}
         )
     }
 }
