@@ -1,9 +1,11 @@
 package com.example.cityengrecommendation
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
@@ -11,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -81,15 +83,19 @@ fun CityApp(
             )
         }
     ) { innerPadding ->
-//        if (contentType == CityContentType.ListAndDetail) {
-//            CityContentType.ListAndDetail(
-//                sports = uiState.categoryList,
-//                sport = uiState.currentCategory,
-//                {
-//                    viewModel.updateCurrentCategory(it)
-//                },
-//                modifier = modifier.padding((innerPadding))
-//            )
+        if (contentType == CityContentType.ListAndDetail) {
+            ListAndDetailRecommendation(
+                categoriesList = uiState.categoryList,
+                recommendationsList = uiState.recommendationList,
+                selectedRecommendation = uiState.currentRecommendation,
+                selectedCategory = uiState.currentCategory,
+                onClickCategory = {
+                    viewModel.updateCurrentCategory(it)
+                },
+                onClickRecommendation = { viewModel.updateCurrentRecommendation(it) },
+                modifier = modifier.padding((innerPadding))
+            )
+        }
         if (uiState.isShowingListPageRecommendation) {
             RecommendationsList(
                 recommendationsList = uiState.recommendationList,
@@ -131,7 +137,8 @@ fun CityAppBar(
     modifier: Modifier = Modifier,
 ) {
 
-    val isShowingDetailPage = windowSize != WindowWidthSizeClass.Expanded && !isShowingListPage && !isShowingListPageRecommendation
+    val isShowingDetailPage =
+        windowSize != WindowWidthSizeClass.Expanded && !isShowingListPage && !isShowingListPageRecommendation
     TopAppBar(
         title = {
             Text(
@@ -174,6 +181,32 @@ fun CityAppBar(
         },
         modifier = modifier
     )
+}
+
+
+@Composable
+private fun ListAndDetailRecommendation(
+    recommendationsList: List<Recommendation>,
+    categoriesList: List<Category>,
+    selectedRecommendation: Recommendation,
+    selectedCategory: Category,
+    onClickRecommendation: (Recommendation) -> Unit,
+    onClickCategory: (Category) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val activity = (LocalContext.current as Activity)
+    Row(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        CategoriesList(categoriesList = categoriesList,onClickCategory, modifier.weight(1f))
+        RecommendationsList(recommendationsList, onClickRecommendation, { }, modifier.weight(1f))
+        RecommendationDetail(
+            selectedRecommendation = selectedRecommendation,
+            onBackPressed = { activity.finish() }, modifier.weight(1f)
+        )
+
+    }
+
 }
 
 @Composable
