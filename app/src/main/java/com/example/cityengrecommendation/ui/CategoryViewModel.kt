@@ -42,12 +42,13 @@ class CategoryViewModel : ViewModel() {
 
     fun navigateToListPage() {
         _uiState.update {
-            it.copy(isShowingListPage = true)
+            it.copy(isShowingListPage = true, isShowingListPageRecommendation = false)
         }
     }
+
     fun navigateToListRecommended() {
         _uiState.update {
-            it.copy(isShowingListPage = false,isShowingListPageRecommendation = true)
+            it.copy(isShowingListPage = false, isShowingListPageRecommendation = true)
 
         }
     }
@@ -55,7 +56,7 @@ class CategoryViewModel : ViewModel() {
 
     fun navigateToDetailPage() {
         _uiState.update {
-            it.copy(isShowingListPageRecommendation = false,isShowingListPage = false)
+            it.copy(isShowingListPageRecommendation = false, isShowingListPage = false)
         }
     }
 }
