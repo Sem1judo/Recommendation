@@ -99,6 +99,7 @@ fun CityApp(
         if (uiState.isShowingListPageRecommendation) {
             RecommendationsList(
                 recommendationsList = uiState.recommendationList,
+                selectedCategory = uiState.currentCategory,
                 onClick = {
                     viewModel.navigateToDetailPage()
                     viewModel.updateCurrentRecommendation(it)
@@ -192,21 +193,29 @@ private fun ListAndDetailRecommendation(
     selectedCategory: Category,
     onClickRecommendation: (Recommendation) -> Unit,
     onClickCategory: (Category) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val activity = (LocalContext.current as Activity)
-    Row(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        CategoriesList(categoriesList = categoriesList,onClickCategory, modifier.weight(1f))
-        RecommendationsList(recommendationsList, onClickRecommendation, { }, modifier.weight(1f))
+
+    Row(modifier = modifier.fillMaxWidth()) {
+        CategoriesList(
+            categoriesList = categoriesList,
+            onClick = onClickCategory,
+            modifier.weight(1f)
+        )
+        RecommendationsList(
+            recommendationsList = recommendationsList,
+            onClick = onClickRecommendation,
+            selectedCategory = selectedCategory,
+            onBackPressed = {},
+            modifier = modifier.weight(1f)
+        )
+        val activity = (LocalContext.current as Activity)
         RecommendationDetail(
             selectedRecommendation = selectedRecommendation,
-            onBackPressed = { activity.finish() }, modifier.weight(1f)
+            onBackPressed = { activity.finish() },
+            modifier.weight(1f)
         )
-
     }
-
 }
 
 @Composable
@@ -254,6 +263,7 @@ private fun RecommendationDetail(
 @Composable
 fun RecommendationsList(
     recommendationsList: List<Recommendation>,
+    selectedCategory: Category,
     onClick: (Recommendation) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
@@ -266,7 +276,7 @@ fun RecommendationsList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
     ) {
-        items(recommendationsList,
+        items(recommendationsList.filter { recommendation -> recommendation.categoryId == selectedCategory.id },
             key = { recommendation -> recommendation.id })
         { recommendation ->
             RecommendationsListItem(
@@ -424,8 +434,10 @@ fun RecommendationsListPreview() {
     CityEngRecommendationTheme {
         RecommendationsList(
             recommendationsList = RecommendationsDataProvider.getRecommendationData(),
+            selectedCategory = CategoryDataProvider.defaultCategory,
             onClick = {},
             onBackPressed = {}
+
         )
     }
 }
