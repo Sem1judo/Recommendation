@@ -95,8 +95,7 @@ fun CityApp(
                 onClickRecommendation = { viewModel.updateCurrentRecommendation(it) },
                 modifier = modifier.padding((innerPadding))
             )
-        }
-        if (uiState.isShowingListPageRecommendation) {
+        } else if (uiState.isShowingListPageRecommendation) {
             RecommendationsList(
                 recommendationsList = uiState.recommendationList,
                 selectedCategory = uiState.currentCategory,
@@ -116,7 +115,7 @@ fun CityApp(
                 },
                 modifier = modifier.padding((innerPadding))
             )
-        } else {
+        } else if (windowSize != WindowWidthSizeClass.Expanded) {
             RecommendationDetail(
                 selectedRecommendation = uiState.currentRecommendation,
                 {},
@@ -210,11 +209,13 @@ private fun ListAndDetailRecommendation(
             modifier = modifier.weight(1f)
         )
         val activity = (LocalContext.current as Activity)
-        RecommendationDetail(
-            selectedRecommendation = selectedRecommendation,
-            onBackPressed = { activity.finish() },
-            modifier.weight(1f)
-        )
+        if (selectedRecommendation.categoryId == selectedCategory.id) {
+            RecommendationDetail(
+                selectedRecommendation = selectedRecommendation,
+                onBackPressed = { activity.finish() },
+                modifier.weight(1f)
+            )
+        }
     }
 }
 
